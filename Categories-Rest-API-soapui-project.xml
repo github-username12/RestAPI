@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="6632a00b-b490-4bb5-8105-a0babb092a53" activeEnvironment="Default" name="Categories Rest API" soapui-version="5.6.0" abortOnError="false" runType="SEQUENTIAL" resourceRoot="" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:RestService" id="0a7ecd20-1188-49e3-98a4-2bba46435726" wadlVersion="http://wadl.dev.java.net/2009/02" name="Categories Rest API" type="rest" definitionUrl="categoryconnectionafterdelete" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache/><con:endpoints/></con:interface><con:testSuite id="715d0a99-dca3-4ca7-b69f-86026c8bcaeb" name="Admin Login Category"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="354e1d28-6fbf-4792-8799-64ce76d13faa" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Category" searchProperties="true"><con:settings/><con:testStep type="groovy" name="Authtentication And Login And Get User And Category And Logout" id="bff6ae84-b5ca-481b-ba6f-c170ad7a1f4a"><con:settings/><con:config><script>import groovy.json.JsonSlurper
+import  java.io.*
+
+//***************** Get The Basic Authentication And Get The Bearer Token
+def url="http://rest-api.upskills.in/api/rest_admin/oauth2/token/client_credentials"
+def authconnection=new URL(url).openConnection()
+authconnection.requestMethod = 'POST'
+authconnection.setRequestProperty("Authorization","Basic "+"dXBza2lsbHNfcmVzdF9hZG1pbl9vYXV0aF9jbGllbnQ6dXBza2lsbHNfcmVzdF9hZG1pbl9vYXV0aF9zZWNyZXQ=")
+log.info authconnection
+def responsecode=authconnection.getInputStream().getText()
+log.info responsecode
+def holder=new JsonSlurper().parseText(responsecode)
+def accesstoken=holder.data.access_token
+log.info accesstoken
+def accesstokentouse="Bearer"+" "+accesstoken
+
+
+//***************** Login Using The User Details and The Bearer Token
+def loginurl="http://rest-api.upskills.in/api/rest_admin/login"
+def loginconnection=new URL(loginurl).openConnection()
+loginconnection.requestMethod = 'POST'
+log.info "accesstokentouse"+accesstokentouse
+loginconnection.setRequestProperty("Authorization",accesstokentouse)
+def userpost= '''{
+	"username": "upskills_admin",
+	"password": "Talent4$$"
+}'''
+loginconnection.setDoOutput(true)
+loginconnection.setRequestProperty("Content-Type", "application/json")
+loginconnection.getOutputStream().write(userpost.getBytes("UTF-8"));
+def respcode = loginconnection.getResponseCode();
+assert respcode==200
+
+
+//***************** Get Logged In User Details
+def getuserurl="http://rest-api.upskills.in/api/rest_admin/user"
+def getuserconnection=new URL(getuserurl).openConnection()
+getuserconnection.requestMethod = 'GET'
+getuserconnection.setRequestProperty("Authorization",accesstokentouse)
+def getuserresponsecode=getuserconnection.getResponseCode()
+log.info "getuserresponsecode"+ getuserresponsecode
+assert getuserresponsecode==200
+def getuserresponse=getuserconnection.getInputStream().getText()
+log.info getuserresponse
+def holdergetuser=new JsonSlurper().parseText(getuserresponse)
+def username=holdergetuser.data.username
+log.info "username "+username
+
+
+
+//***************** Get The Category Details
+def categoryurl="http://rest-api.upskills.in/api/rest_admin/categories/extended/limit/2/page/1"
+def categoryconnection=new URL(categoryurl).openConnection()
+categoryconnection.requestMethod = 'GET'
+categoryconnection.setRequestProperty("Authorization",accesstokentouse)
+def categoryresponsecode=categoryconnection.getResponseCode()
+log.info "categoryresponsecode"+ categoryresponsecode
+assert categoryresponsecode==200
+def respheders=categoryconnection.getHeaderField("X-Pagination-Limit")
+log.info "respheders"+respheders
+assert respheders=="2"
+
+
+
+//***************** User Log Out
+def logouturl="http://rest-api.upskills.in/api/rest_admin/logout"
+def logoutconnection=new URL(logouturl).openConnection()
+logoutconnection.requestMethod = 'POST'
+logoutconnection.setRequestProperty("Authorization",accesstokentouse)
+def logoutrespcode = logoutconnection.getResponseCode()
+log.info "logoutrespcode"+ logoutrespcode
+assert logoutrespcode==200</script></con:config></con:testStep><con:testStep type="groovy" name="Product Add And Get And Delete" id="e0515676-ed7d-4a65-961d-32b0f483a080"><con:settings/><con:config><script>import groovy.json.JsonSlurper
+import groovy.json.JsonBuilder
+import  java.io.*
+
+//***************** Get The Basic Authentication And Get The Bearer Token
+def url="http://rest-api.upskills.in/api/rest_admin/oauth2/token/client_credentials"
+def authconnection=new URL(url).openConnection()
+authconnection.requestMethod = 'POST'
+authconnection.setRequestProperty("Authorization","Basic "+"dXBza2lsbHNfcmVzdF9hZG1pbl9vYXV0aF9jbGllbnQ6dXBza2lsbHNfcmVzdF9hZG1pbl9vYXV0aF9zZWNyZXQ=")
+//log.info authconnection
+def responsecode=authconnection.getInputStream().getText()
+//log.info responsecode
+def holder=new JsonSlurper().parseText(responsecode)
+def accesstoken=holder.data.access_token
+//log.info accesstoken
+def accesstokentouse="Bearer"+" "+accesstoken
+
+
+//***************** Login Using The User Details and The Bearer Token
+def loginurl="http://rest-api.upskills.in/api/rest_admin/login"
+def loginconnection=new URL(loginurl).openConnection()
+loginconnection.requestMethod = 'POST'
+log.info "accesstokentouse"+accesstokentouse
+loginconnection.setRequestProperty("Authorization",accesstokentouse)
+def userpost= '''{
+	"username": "upskills_admin",
+	"password": "Talent4$$"
+}'''
+loginconnection.setDoOutput(true)
+loginconnection.setRequestProperty("Content-Type", "application/json")
+loginconnection.getOutputStream().write(userpost.getBytes("UTF-8"));
+def respcode = loginconnection.getResponseCode();
+assert respcode==200
+
+//******************** Add A Product Category
+Random random = new Random()
+def randomvalue="Model"+random.next(200)
+log.info "randomvalue"+randomvalue
+
+def producttoadd='''{
+  "category_description": [
+    {
+      "name": "Demo category",
+      "description": "Description of the category",
+      "language_id": "1",
+      "meta_description": "Meta description of the category",
+      "meta_keyword": "demo, demo2",
+      "meta_title": "meta-title"
+    }
+  ],
+  "image": "",
+  "sort_order": "0",
+  "category_store": [
+    0
+  ],
+  "parent_id": 0,
+  "status": "1",
+  "category_filter": [
+    0
+  ],
+  "column": "1",
+  "top": 0,
+  "category_seo_url": [
+    {
+      "keyword": "demo-keyword",
+      "language_id": "1",
+      "store_id": "0"
+    }
+  ]
+}'''
+
+
+def jsonmodify=new JsonSlurper().parseText(producttoadd)
+jsonmodify.category_description[0].name=randomvalue
+jsonmodify.category_seo_url[0].keyword=randomvalue
+def builder = new JsonBuilder(jsonmodify)
+log.info "builder" +builder.toPrettyString()
+def createproducturl="http://rest-api.upskills.in/api/rest_admin/categories"
+def postcreate=new URL(createproducturl).openConnection()
+postcreate.requestMethod = 'POST'
+postcreate.setRequestProperty("Authorization",accesstokentouse)
+postcreate.setDoOutput(true)
+postcreate.setRequestProperty("Content-Type", "application/json")
+postcreate.getOutputStream().write(builder.toPrettyString().getBytes("UTF-8"));
+def createrespcode = postcreate.getResponseCode();
+log.info "createrespcode"+createrespcode
+assert createrespcode==200
+def productid
+if (createrespcode.equals(200)) {
+	def postres=postcreate.getInputStream().getText()
+	def holder2=new JsonSlurper().parseText(postres)
+	productid=holder2.data.id
+    log.info "productid"+productid
+}
+
+//****************** Get Product Category After Add Product
+def categorygeturl="http://rest-api.upskills.in/api/rest_admin/categories/"+productid
+log.info "categorygeturl"+categorygeturl
+def categoryconnection=new URL(categorygeturl).openConnection()
+categoryconnection.requestMethod = 'GET'
+categoryconnection.setRequestProperty("Authorization",accesstokentouse)
+def categoryresponsecode=categoryconnection.getResponseCode()
+log.info "categoryresponsecode"+ categoryresponsecode
+assert categoryresponsecode==200
+def categoryesponse=categoryconnection.getInputStream().getText()
+log.info "categoryesponse"+categoryesponse
+def categorygetholder=new JsonSlurper().parseText(categoryesponse)
+def languageid=categorygetholder.data.language_id.toString().substring(1,2)
+log.info "languageid"+languageid
+
+//*************************** Update A Product Category
+Random randomupdate = new Random()
+def randomvalueupdate="Model"+randomupdate.next(200)
+log.info "randomvalueupdate"+randomvalueupdate
+def producttoupdate='''{
+  "category_description": [
+    {
+      "name": "Demo category",
+      "description": "Description of the category",
+      "language_id": "1",
+      "meta_description": "Meta description of the category",
+      "meta_keyword": "demo, demo2",
+      "meta_title": "meta-title"
+    }
+  ],
+  "image": "",
+  "sort_order": "0",
+  "category_store": [
+    0
+  ],
+  "parent_id": 0,
+  "status": "1",
+  "category_filter": [
+    0
+  ],
+  "column": "1",
+  "top": 0,
+  "category_seo_url": [
+    {
+      "keyword": "demo-keyword",
+      "language_id": "1",
+      "store_id": "0"
+    }
+  ]
+}'''
+
+
+def jsonupdate=new JsonSlurper().parseText(producttoupdate)
+jsonupdate.category_description[0].name=randomvalueupdate
+jsonupdate.category_description[0].language_id=languageid
+jsonupdate.category_seo_url[0].keyword=randomvalueupdate
+jsonupdate.category_seo_url[0].language_id=languageid
+def builderupdate = new JsonBuilder(jsonupdate)
+log.info "builderupdate" +builderupdate.toPrettyString()
+def updateproducturl="http://rest-api.upskills.in/api/rest_admin/categories/"+productid
+log.info "updateproducturl"+updateproducturl
+def update=new URL(updateproducturl).openConnection()
+update.requestMethod = 'PUT'
+update.setRequestProperty("Authorization",accesstokentouse)
+update.setDoOutput(true)
+update.setRequestProperty("Content-Type", "application/json")
+update.getOutputStream().write(builderupdate.toPrettyString().getBytes("UTF-8"));
+def updaterespcode = update.getResponseCode();
+log.info "updaterespcode"+updaterespcode
+assert updaterespcode==200
+
+
+
+//************************ Get The Product Category After Update
+def categorygeturlforupdate="http://rest-api.upskills.in/api/rest_admin/categories/"+productid
+log.info "categorygeturlforupdate"+categorygeturlforupdate
+def categoryconnectionforupdate=new URL(categorygeturlforupdate).openConnection()
+categoryconnectionforupdate.requestMethod = 'GET'
+categoryconnectionforupdate.setRequestProperty("Authorization",accesstokentouse)
+def categoryresponsecodeforupdate=categoryconnectionforupdate.getResponseCode()
+log.info "categoryresponsecodeforupdate"+ categoryresponsecodeforupdate
+assert categoryresponsecodeforupdate==200
+def categoryesponseforupdate=categoryconnectionforupdate.getInputStream().getText()
+log.info "categoryesponseforupdate"+categoryesponseforupdate
+def categorygetholderforupdate=new JsonSlurper().parseText(categoryesponseforupdate)
+def name=categorygetholderforupdate.data.name
+name=name.toString().substring(1,name.toString().length()-1)
+def metatitle=categorygetholderforupdate.data.meta_title
+metatitle=metatitle.toString().substring(1,metatitle.toString().length()-1)
+log.info "nameget"+name
+log.info "metatitle"+metatitle
+log.info "randomvalueupdate"+randomvalueupdate
+assert name==randomvalueupdate
+assert metatitle=="meta-title"
+
+
+//*********************** Delete A Product Category
+def categorygeturlfordelete="http://rest-api.upskills.in/api/rest_admin/categories/"+productid
+log.info "categorygeturlfordelete"+categorygeturlfordelete
+def categoryconnectionfordelete=new URL(categorygeturlfordelete).openConnection()
+categoryconnectionfordelete.requestMethod = 'DELETE'
+categoryconnectionfordelete.setRequestProperty("Authorization",accesstokentouse)
+def categoryresponsecodefordelete=categoryconnectionfordelete.getResponseCode()
+log.info "categoryresponsecodefordelete"+ categoryresponsecodefordelete
+assert categoryresponsecodefordelete==200
+
+
+//*********************** Get The Product category After Delete
+def categorygeturlafterdelete="http://rest-api.upskills.in/api/rest_admin/categories/"+productid
+log.info "categorygeturlafterdelete"+categorygeturlafterdelete
+def categoryconnectionafterdelete=new URL(categorygeturlafterdelete).openConnection()
+categoryconnectionafterdelete.requestMethod = 'GET'
+categoryconnectionafterdelete.setRequestProperty("Authorization",accesstokentouse)
+def categoryresponsecodeafterdelete=categoryconnectionafterdelete.getResponseCode()
+log.info "categoryresponsecodeafterdelete"+ categoryresponsecodeafterdelete
+assert categoryresponsecodeafterdelete==404
+
+
+//***************** User Log Out
+def logouturl="http://rest-api.upskills.in/api/rest_admin/logout"
+def logoutconnection=new URL(logouturl).openConnection()
+logoutconnection.requestMethod = 'POST'
+logoutconnection.setRequestProperty("Authorization",accesstokentouse)
+def logoutrespcode = logoutconnection.getResponseCode()
+log.info "logoutrespcode"+ logoutrespcode
+assert logoutrespcode==200</script></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
